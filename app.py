@@ -80,6 +80,18 @@ if uploaded_file is not None:
         if st.button("🔍 Analisis Kesegaran", type="primary"):
             with st.spinner("Menganalisis kondisi buah..."):
                 predictions = model.predict(data)
+                st.write("Input shape:", model.input_shape, "| Output shape:", model.output_shape)
+
+                # Cek tiap varian normalisasi
+                raw = np.asarray(image_resized).astype(np.float32)
+                variants = {
+                    "raw 0-255": raw,
+                    "0-1": raw / 255.0,
+                    "-1 sampai 1": raw / 127.5 - 1.0,
+                }
+                for name, arr in variants.items():
+                    p = model.predict(np.expand_dims(arr, 0), verbose=0)[0]
+                    st.write(name, "| sum:", round(float(p.sum()), 3), "| top:", CLASS_NAMES[int(np.argmax(p))], round(float(p.max()), 3))
                 
                 # Ambil indeks kelas dengan probabilitas tertinggi
                 class_index = np.argmax(predictions[0])
