@@ -30,7 +30,7 @@ CONFIDENCE_THRESHOLD = 60.0
 # 2. Cache pembacaan model Keras agar efisien
 @st.cache_resource
 def load_keras_model():
-    model_path = 'my_model.keras'
+    model_path = 'model_terbaik.keras'
     
     # Jika file model belum ada di server Streamlit, download dari Google Drive
     if not os.path.exists(model_path):
