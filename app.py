@@ -2,7 +2,7 @@ import os
 import gdown
 import streamlit as st
 import tensorflow as tf
-from PIL import Image, ImageOps
+from PIL import Image
 import numpy as np
 
 # Konfigurasi Halaman Web
@@ -25,8 +25,8 @@ CLASS_NAMES = [
     'Pisang Segar'
 ]
 
-# Ambang batas keyakinan (Confidence Threshold)
-CONFIDENCE_THRESHOLD = 60.0  
+# Ambang batas keyakinan (Confidence Threshold diturunkan ke 30.0 agar lebih toleran)
+CONFIDENCE_THRESHOLD = 30.0  
 
 # 2. Cache pembacaan model Keras agar efisien
 @st.cache_resource
@@ -60,16 +60,18 @@ if uploaded_file is not None:
         st.error("Model belum siap. Mohon periksa kembali koneksi atau ketersediaan file model!")
     else:
         # Tampilkan Gambar yang Diunggah
-        image = Image.open(uploaded_file)
+        image = Image.open(uploaded_file).convert("RGB") # Memastikan format 3 kanal RGB
         st.image(image, caption="Gambar yang Diunggah", use_container_width=True)
         
-        # Preprocessing Gambar (224x224)
+        # Preprocessing Gambar: Resize standar tanpa memotong gambar
         target_size = (224, 224) 
-        image_resized = ImageOps.fit(image, target_size, Image.Resampling.LANCZOS)
+        image_resized = image.resize(target_size)
         
-        # Konversi ke array dan normalisasi piksel (skala [0, 1])
+        # Konversi ke array
         img_array = np.asarray(image_resized)
-        normalized_image_array = (img_array.astype(np.float32) / 255.0)
+        
+        # Normalisasi Skala [-1, 1] (Sangat umum untuk Keras/Transfer Learning)
+        normalized_image_array = (img_array.astype(np.float32) / 127.5) - 1.0
         
         # Tambahkan dimensi batch: (1, 224, 224, 3)
         data = np.expand_dims(normalized_image_array, axis=0)
@@ -94,7 +96,7 @@ if uploaded_file is not None:
                 
                 # Pengecekan ambang batas keyakinan
                 if confidence < CONFIDENCE_THRESHOLD:
-                    st.warning("⚠️ Buah tidak terdeteksi dengan jelas atau gambar di luar dataset pelatihan model.")
+                    st.warning(f"⚠️ Buah tidak terdeteksi dengan jelas atau di luar dataset (Confidence: {confidence:.2f}%).")
                     st.info("Saran: Unggah gambar jenis buah yang sesuai dengan pencahayaan yang terang.")
                 else:
                     # Tampilkan hasil simplifikasi (Hanya Segar atau Busuk)
@@ -103,4 +105,5 @@ if uploaded_file is not None:
                     else:
                         st.error(f"### Hasil Prediksi: **{simple_label}** 🔴")
                     
+                    st.caption(f"Kelas Asli: **{raw_label}**")
                     st.metric(label="Tingkat Keyakinan (Confidence)", value=f"{confidence:.2f}%")
