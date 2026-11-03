@@ -96,7 +96,7 @@ if uploaded_file is not None:
                 raw_label = CLASS_NAMES[class_index]
 
                 # Simplifikasi label mentah menjadi 2 Kategori
-                if "Segar" in raw_label:
+                if raw_label.startswith("fresh"):
                     simple_label = "Buah Segar"
                 else:
                     simple_label = "Buah Busuk"
