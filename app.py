@@ -17,12 +17,12 @@ st.write("Unggah foto buah untuk mengecek kondisi kesegarannya (**Segar** atau *
 
 # 1. Masukkan urutan label asli sesuai dengan folder/dataset pelatihan model Keras kamu
 CLASS_NAMES = [
-    'Apel Busuk', 
-    'Apel Segar', 
-    'Jeruk Busuk', 
-    'Jeruk Segar', 
-    'Pisang Busuk', 
-    'Pisang Segar'
+   'freshapples',
+ 'freshbanana',
+ 'freshoranges',
+ 'rottenapples',
+ 'rottenbanana',
+ 'rottenoranges'
 ]
 
 # Ambang batas keyakinan (Confidence Threshold diturunkan ke 30.0 agar lebih toleran)
@@ -70,11 +70,8 @@ if uploaded_file is not None:
         # Konversi ke array
         img_array = np.asarray(image_resized)
         
-        # Normalisasi Skala [-1, 1] (Sangat umum untuk Keras/Transfer Learning)
-        normalized_image_array = (img_array.astype(np.float32) / 127.5) - 1.0
-        
         # Tambahkan dimensi batch: (1, 224, 224, 3)
-        data = np.expand_dims(normalized_image_array, axis=0)
+        data = np.expand_dims(img_array.astype(np.float32), axis=0)
 
         # Tombol Analisis Prediksi
         if st.button("🔍 Analisis Kesegaran", type="primary"):
